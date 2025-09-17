@@ -276,6 +276,10 @@ def err_unimplemented_conversion_with_fixed_point_type : Error<
 
 def err_requires_positive_value : Error<
   "%select{invalid value '%0'; must be positive|value '%0' is too large}1">;
+def err_cxx14_digit_separator : Error<
+  "digit separator for literals is a C++14 feature">;
+def err_c23_digit_separator : Error<
+  "digit separator for literals is a C23 feature">;
 
 // SEH
 def err_seh_expected_handler : Error<

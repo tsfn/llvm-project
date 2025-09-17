@@ -1210,6 +1210,18 @@ NumericLiteralParser::NumericLiteralParser(StringRef TokSpelling,
   if (!hadError && saw_fixed_point_suffix) {
     assert(isFract || isAccum);
   }
+
+  if (!hadError && !(LangOpts.CPlusPlus14 || LangOpts.C23)) {
+    // Check for digit separators only when necessary.
+    for (const char *c = ThisTokBegin; c != ThisTokEnd; ++c)
+      if (isDigitSeparator(*c)) {
+        Diag(&Diags, LangOpts, FullSourceLoc(TokLoc, SM), ThisTokBegin, c,
+             c + 1,
+             LangOpts.CPlusPlus ? diag::err_cxx14_digit_separator
+                                : diag::err_c23_digit_separator);
+        hadError = true;
+      }
+  }
 }
 
 /// ParseDecimalOrOctalCommon - This method is called for decimal or octal
