@@ -938,6 +938,18 @@ NumericLiteralParser::NumericLiteralParser(StringRef TokSpelling,
     return;
   }
 
+  // Check if there are any digit separators when it's not supported.
+  if (!(LangOpts.CPlusPlus14 || LangOpts.C23))
+    for (const char *C = ThisTokBegin; C != ThisTokEnd; C++)
+      if (isDigitSeparator(*C)) {
+        Diag(&Diags, LangOpts, FullSourceLoc(TokLoc, SM), ThisTokBegin, C,
+             C + 1,
+             LangOpts.CPlusPlus ? diag::err_cxx14_digit_separator
+                                : diag::err_c23_digit_separator);
+        hadError = true;
+        return;
+      }
+
   if (*s == '0') { // parse radix
     ParseNumberStartingWithZero(TokLoc);
     if (hadError)
@@ -1209,18 +1221,6 @@ NumericLiteralParser::NumericLiteralParser(StringRef TokSpelling,
 
   if (!hadError && saw_fixed_point_suffix) {
     assert(isFract || isAccum);
-  }
-
-  if (!hadError && !(LangOpts.CPlusPlus14 || LangOpts.C23)) {
-    // Check for digit separators only when necessary.
-    for (const char *c = ThisTokBegin; c != ThisTokEnd; ++c)
-      if (isDigitSeparator(*c)) {
-        Diag(&Diags, LangOpts, FullSourceLoc(TokLoc, SM), ThisTokBegin, c,
-             c + 1,
-             LangOpts.CPlusPlus ? diag::err_cxx14_digit_separator
-                                : diag::err_c23_digit_separator);
-        hadError = true;
-      }
   }
 }
 
